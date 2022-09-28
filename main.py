@@ -92,9 +92,6 @@ class Game:
                         tile.set_color((0, 0, 0))
 
     def update_tiles(self):
-        # This is so ugly it isn't funny, IDK why but doing it the ideal way wasn't working, pointer issue???
-        # IDK because lists don't use pointers when copying/=. Changes to the tiles list during the iteration
-        # were impacting other tiles during the iteration
         b_list = []
         r_list = []
 
@@ -297,9 +294,13 @@ def draw_frame():
     screen.fill((255, 255, 255))
     tile_width = width / col_count
     tile_height = height / row_count
+    mp = pygame.mouse.get_pos()
     for row in display_buffer:
         for tile in row:
-            pygame.draw.rect(screen, tile.get_color(), tile)
+            if tile.collidepoint(mp[0], mp[1]):
+                pygame.draw.rect(screen, (255, 0, 0), tile)
+            else:
+                pygame.draw.rect(screen, tile.get_color(), tile)
     for i in range(col_count + 1):
         p1 = i * tile_width, 0
         p2 = i * tile_width, height
@@ -332,10 +333,11 @@ def run():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     playing = not playing
-                if event.key == pygame.K_UP:
-                    delay -= 25
                 if event.key == pygame.K_DOWN:
-                    delay += 25
+                    if delay >= 50:
+                        delay -= 50
+                if event.key == pygame.K_UP:
+                    delay += 50
                 if event.key == pygame.K_c:
                     game.reset()
 
@@ -351,13 +353,17 @@ def run():
         draw_frame()
 
         if not playing:
-            display.get_screen().blit(font.render('Game Paused!', True, (255, 127, 0)), (10, 5))
+            display.get_screen().blit(font.render('Game Paused', True, (255, 127, 0)), (10, 5))
         else:
-            display.get_screen().blit(font.render('Game Running!', True, (255, 127, 0)), (10, 5))
+            display.get_screen().blit(font.render('Game Running', True, (255, 127, 0)), (10, 5))
 
         display.get_screen().blit(font.render('Delay: {0}'.format(delay), True, (255, 127, 0)), (10, 30))
 
-        display.get_screen().blit(font.render('Press \'C\' to clear!', True, (255, 127, 0)), (10, 55))
+        display.get_screen().blit(font.render('Press \'Left Click\' to toggle a tile', True, (255, 127, 0)), (10, height - 80))
+
+        display.get_screen().blit(font.render('Press \'C\' to clear', True, (255, 127, 0)), (10, height - 55))
+
+        display.get_screen().blit(font.render('Press \'SPACE\' to Play/Pause', True, (255, 127, 0)), (10, height - 30))
 
         pygame.display.flip()
         clock.tick(60)
@@ -365,14 +371,14 @@ def run():
 
 
 line_width = 1
-row_count = 80
-col_count = 80
+row_count = 40
+col_count = 40
 width = 800
 height = 800
 is_full_screen = False
 
 pygame.init()
-pygame.display.set_caption("Game Of Py")
+pygame.display.set_caption("Game Of Pyfe")
 pygame.font.init()
 font = pygame.font.SysFont('Comic Sans MS', 20)
 display = Display(width, height, is_full_screen)
